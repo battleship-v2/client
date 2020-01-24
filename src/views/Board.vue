@@ -52,6 +52,8 @@
 
 <script>
 import BoardManipulator from '../helpers/boardManipulator';
+import Shot from '../assets/sniper.wav';
+import Forest from '../assets/forest.mp3';
 
 export default {
   data() {
@@ -72,6 +74,8 @@ export default {
     userShoot(e) {
       if (this.isGameStarted && this.whoseTurn !== null) {
         const hasilBuruan = this.myBoard.peekCell(e.offsetX, e.offsetY);
+        const audio = new Audio(Shot);
+        audio.play();
         console.log(hasilBuruan);
         this.listBuruan[this.whoseTurn].push(hasilBuruan);
       }
@@ -152,8 +156,17 @@ export default {
   },
   mounted() {
     this.myBoard = BoardManipulator();
+    const forest = new Audio(Forest);
+    forest.play();
   }
 };
 </script>
 
-<style></style>
+<style>
+#board {
+  width: 100vw;
+  height: 100vh;
+  background-image: url('https://siboneycubancuisine.com/image/152798-full_download-jungle-background-hd-high-quality-wallpaper-for.jpg');
+  background-size: cover;
+}
+</style>
