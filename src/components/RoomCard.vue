@@ -64,7 +64,7 @@ export default {
         roomName: this.name,
         playerName: this.getUsername
       });
-      this.$router.push('/board');
+      this.$router.push(`/board/${this.name}`);
     },
     fetchRooms() {
       socket.on('fetch-rooms', dataRooms => {

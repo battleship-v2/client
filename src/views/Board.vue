@@ -17,7 +17,7 @@
     <div class="container">
       <div class="row">
         <div class="col-sm">
-          <h2>User 1</h2>
+          <h2>{{ roomdetail.players[0].name }}</h2>
           <ul class="list-group">
             <li
               class="list-group-item"
@@ -29,7 +29,13 @@
           </ul>
         </div>
         <div class="col-sm">
-          <h2>User 2</h2>
+          <h2>
+            {{
+              roomdetail.players[1].name
+                ? roomdetail.players[1].name
+                : 'Waiting for Player'
+            }}
+          </h2>
           <ul class="list-group">
             <li
               class="list-group-item"
@@ -55,6 +61,7 @@ import BoardManipulator from '../helpers/boardManipulator';
 import Shot from '../assets/sniper.wav';
 import Forest from '../assets/forest.mp3';
 
+import socket from '../socket/index';
 export default {
   data() {
     return {
@@ -67,10 +74,16 @@ export default {
       message: null,
       currTime: null,
       whoseTurn: null,
-      winner: null
+      winner: null,
+      roomdetail: {}
     };
   },
   methods: {
+    fetchRooms() {
+      socket.on('fetch-rooms', dataRooms => {
+        this.$store.commit('updaterooms', dataRooms);
+      });
+    },
     userShoot(e) {
       if (this.isGameStarted && this.whoseTurn !== null) {
         const hasilBuruan = this.myBoard.peekCell(e.offsetX, e.offsetY);
@@ -81,6 +94,7 @@ export default {
       }
     },
     startTimer() {
+      this.myBoard = BoardManipulator();
       const conversion = time => {
         let minutes = Math.floor(time / 60);
         let seconds = time % 60;
@@ -155,9 +169,26 @@ export default {
     }
   },
   mounted() {
-    this.myBoard = BoardManipulator();
     const forest = new Audio(Forest);
     forest.play();
+  },
+  computed: {
+    roomlist() {
+      return this.$store.state.roomlist;
+    }
+  },
+  watch: {
+    roomlist: {
+      handler: function(val) {
+        this.roomdetail = val.find(room => {
+          return room.name === this.$route.params.roomName;
+        });
+      },
+      immediate: true
+    }
+  },
+  created() {
+    this.fetchRooms();
   }
 };
 </script>
