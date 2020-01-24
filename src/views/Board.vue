@@ -9,7 +9,13 @@
     <br />
 
     <div class="time">
-      <b-button v-show="!isGameStarted" @click="startTimer">START</b-button>
+      <b-button
+        v-show="
+          !isGameStarted && roomdetail.players[0].name === $store.state.username
+        "
+        @click="startTimer"
+        >START</b-button
+      >
       <div v-show="isGameStarted">{{ message }}</div>
       <div v-show="isGameStarted">Waktu: {{ currTime }}</div>
     </div>
@@ -17,7 +23,7 @@
     <div class="container">
       <div class="row">
         <div class="col-sm">
-          <h2>{{ roomdetail.players[0].name }}</h2>
+          <h2 class="playerName">{{ roomdetail.players[0].name }}</h2>
           <ul class="list-group">
             <li
               class="list-group-item"
@@ -29,7 +35,7 @@
           </ul>
         </div>
         <div class="col-sm">
-          <h2>
+          <h2 class="playerName">
             {{
               roomdetail.players[1].name
                 ? roomdetail.players[1].name
@@ -49,8 +55,9 @@
       </div>
 
       <div v-show="winner" class="row">
-        <h1 v-show="winner !== 'tie'">The winner is {{ winner }}</h1>
-        <h1 v-show="winner === 'tie'">TIE!</h1>
+        <!-- <h1 v-show="winner !== 'tie'">The winner is {{ winner }}</h1> -->
+        <!-- <h1 v-show="winner === 'tie'">TIE!</h1> -->
+        <h1>{{ winner }}</h1>
       </div>
     </div>
   </div>
@@ -85,7 +92,7 @@ export default {
       });
     },
     userShoot(e) {
-      if (this.isGameStarted && this.whoseTurn !== null) {
+      if (this.isGameStarted && this.roomdetail.players[0].hisTurn) {
         const hasilBuruan = this.myBoard.peekCell(e.offsetX, e.offsetY);
         const audio = new Audio(Shot);
         audio.play();
@@ -93,8 +100,26 @@ export default {
         this.listBuruan[this.whoseTurn].push(hasilBuruan);
       }
     },
+    changeStatus() {
+      socket.on('change-status', room => {
+        this.roomdetail = room;
+      });
+    },
+    changeTurn() {
+      socket.on('change-turn', room => {
+        this.roomdetail = room;
+        this.startTimer();
+      });
+    },
+    endResult() {
+      socket.on('end-result', ({ text, score }) => {
+        this.winner = text;
+      });
+    },
+
     startTimer() {
       this.myBoard = BoardManipulator();
+      socket.emit('game', this.roomdetail);
       const conversion = time => {
         let minutes = Math.floor(time / 60);
         let seconds = time % 60;
@@ -140,30 +165,18 @@ export default {
           this.whoseTurn = null;
           this.message = `Player 2 GET READY`;
           this.isGameStarted = true;
-          timer(5, () => {
-            this.whoseTurn = 'user2';
-            this.message = `Player 2 TURNS`;
-            this.isGameStarted = true;
-            timer(15, () => {
-              this.whoseTurn = null;
-              this.isGameStarted = false;
 
-              const scoreUser1 = this.listBuruan.user1.filter(
-                buruan => buruan !== null
-              ).length;
-              const scoreUser2 = this.listBuruan.user2.filter(
-                buruan => buruan !== null
-              ).length;
-              console.log(scoreUser1, scoreUser2);
-              if (scoreUser1 > scoreUser2) {
-                this.winner = 'User 1';
-              } else if (scoreUser1 < scoreUser2) {
-                this.winner = 'User 2';
-              } else {
-                this.winner = 'tie';
-              }
-            });
-          });
+          const scoreUser = this.listBuruan.user1.filter(
+            buruan => buruan !== null
+          ).length;
+
+          if (this.roomdetail.players[0].hisTurn) {
+            this.roomdetail.players[0].score = scoreUser;
+            socket.emit('turn', this.roomdetail);
+          } else {
+            this.roomdetail.players[1].score = scoreUser;
+            socket.emit('end', this.roomdetail);
+          }
         });
       });
     }
@@ -189,6 +202,7 @@ export default {
   },
   created() {
     this.fetchRooms();
+    this.changeStatus();
   }
 };
 </script>
@@ -199,5 +213,11 @@ export default {
   height: 100vh;
   background-image: url('https://siboneycubancuisine.com/image/152798-full_download-jungle-background-hd-high-quality-wallpaper-for.jpg');
   background-size: cover;
+}
+.playerName {
+  color: red;
+  font-size: 30px;
+  padding: 20px;
+  background-color: white;
 }
 </style>
