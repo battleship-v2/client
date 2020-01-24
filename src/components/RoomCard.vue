@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import socket from '../socket'
+import socket from '../socket';
 export default {
   props: ['name', 'playercount', 'roomstatus'],
   data() {
@@ -27,20 +27,20 @@ export default {
       status: '',
       disable: false,
       btnClass: ''
-    }
+    };
   },
   computed: {
     getUsername() {
-      return this.$store.state.username
+      return this.$store.state.username;
     }
   },
   watch: {
     roomstatus: {
       handler: function(val) {
         if (val === false) {
-          this.status = 'Waiting'
+          this.status = 'Waiting';
         } else {
-          this.status = 'Playing'
+          this.status = 'Playing';
         }
       },
       immediate: true
@@ -48,11 +48,11 @@ export default {
     playercount: {
       handler: function(val) {
         if (val >= 2) {
-          this.disable = true
-          this.btnClass = 'btn-warning'
+          this.disable = true;
+          this.btnClass = 'btn-warning';
         } else {
-          this.disable = false
-          this.btnClass = 'btn-secondary'
+          this.disable = false;
+          this.btnClass = 'btn-secondary';
         }
       },
       immediate: true
@@ -63,19 +63,19 @@ export default {
       socket.emit('join-room', {
         roomName: this.name,
         playerName: this.getUsername
-      })
-      this.$router.push('/area')
+      });
+      this.$router.push('/board');
     },
     fetchRooms() {
       socket.on('fetch-rooms', dataRooms => {
-        this.$store.commit('updaterooms', dataRooms)
-      })
+        this.$store.commit('updaterooms', dataRooms);
+      });
     }
   },
   mounted() {
-    this.fetchRooms()
+    this.fetchRooms();
   }
-}
+};
 </script>
 
 <style>

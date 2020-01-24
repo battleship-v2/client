@@ -6,13 +6,7 @@
 </template>
 
 <script>
-<<<<<<< HEAD
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue';
-
-=======
-import Login from "../components/Login";
->>>>>>> Create Landing Page, Create Room List
+import Login from '../components/Login';
 export default {
   name: 'home',
   components: {
