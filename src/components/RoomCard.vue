@@ -9,7 +9,10 @@
         <p>Status : {{ status }}</p>
       </div>
       <div class="card-footer">
-        <button class="btn btn-warning" @click="joinRoom">Join Rooms</button>
+        <button class="btn btn-info" @click="joinRoom" :disabled="disable">
+          Join Rooms
+          <i class="fas fa-sign-in-alt"></i>
+        </button>
       </div>
     </div>
   </div>
@@ -21,7 +24,9 @@ export default {
   props: ['name', 'playercount', 'roomstatus'],
   data() {
     return {
-      status: ''
+      status: '',
+      disable: false,
+      btnClass: ''
     }
   },
   computed: {
@@ -39,6 +44,18 @@ export default {
         }
       },
       immediate: true
+    },
+    playercount: {
+      handler: function(val) {
+        if (val >= 2) {
+          this.disable = true
+          this.btnClass = 'btn-warning'
+        } else {
+          this.disable = false
+          this.btnClass = 'btn-secondary'
+        }
+      },
+      immediate: true
     }
   },
   methods: {
@@ -47,6 +64,7 @@ export default {
         roomName: this.name,
         playerName: this.getUsername
       })
+      this.$router.push('/area')
     },
     fetchRooms() {
       socket.on('fetch-rooms', dataRooms => {

@@ -9,11 +9,15 @@
       placeholder="Username"
       v-model="username"
     />
-    <button class="btn btn-success btn-find" @click="loginGame">Find Rooms</button>
+    <button class="btn btn-success btn-find" @click="loginGame">
+      Find Rooms
+      <i class="fas fa-chess-rook"></i>
+    </button>
   </div>
 </template>
 
 <script>
+import Swal from 'sweetalert2'
 export default {
   data() {
     return {
@@ -22,8 +26,16 @@ export default {
   },
   methods: {
     loginGame() {
-      this.$store.commit('updateUsername', this.username)
-      this.$router.push('rooms')
+      if (this.username) {
+        this.$store.commit('updateUsername', this.username)
+        this.$router.push('rooms')
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Please Input Username to Join'
+        })
+      }
     }
   }
 }
